@@ -1,36 +1,45 @@
-import microApp from '@micro-zoe/micro-app'
-import { EventCenterForMicroApp } from '@micro-zoe/micro-app'
-import { childConfigs } from '@/utils/microConfigs'
+import microApp from '@micro-zoe/micro-app';
+import { EventCenterForMicroApp } from '@micro-zoe/micro-app';
+import { childConfigs } from '@/utils/microConfigs';
 import { useMicroStore } from '@/store/micro';
 
-
-let $window: any = window
+const $window: any = window;
 export const registerChildMicro = () => {
-    let microAppModules: any = {}
+    const microAppModules: any = {};
     childConfigs.map((item: any) => {
-        let name = item.childName.replace(new RegExp("\\-", "g"), "_");
-        $window[`eventCenterFor_${name}`] = new EventCenterForMicroApp(item.childName)
+        const name = item.childName.replace(new RegExp('\\-', 'g'), '_');
+        $window[`eventCenterFor_${name}`] = new EventCenterForMicroApp(
+            item.childName,
+        );
         microAppModules[item.childName] = [
             {
                 loader(code: any) {
                     if (process.env.NODE_ENV === 'development') {
                         // 这里 basename 需要和子应用vite.config.js中base的配置保持一致
                         // eslint-disable-next-line no-param-reassign
-                        let reg = new RegExp(`(from|import)(\\s*['"])(\\/` + item.childName + `\\/)`, 'g')
+                        const reg = new RegExp(
+                            `(from|import)(\\s*['"])(\\/` +
+                                item.childName +
+                                `\\/)`,
+                            'g',
+                        );
                         code = code.replace(reg, (all: any) => {
-                            return all.replace(`/${item.childName}/`, item.childUrl)
-                        })
+                            return all.replace(
+                                `/${item.childName}/`,
+                                item.childUrl,
+                            );
+                        });
                     }
-                    return code
-                }
-            }
-        ]
-    })
+                    return code;
+                },
+            },
+        ];
+    });
     microApp.start({
         plugins: {
-            modules: microAppModules
-        }
-    })
+            modules: microAppModules,
+        },
+    });
 
     // microApp.start({
     //     plugins: {
@@ -83,16 +92,15 @@ export const registerChildMicro = () => {
     //         }
     //     }
     // })
-}
+};
 
 export const globalDataListener = () => {
     const microStoreData: any = useMicroStore();
     //监听全局数据变化
     microApp.addGlobalDataListener((globalData: any) => {
-        let { from, data } = globalData
+        const { from, data } = globalData;
         if (from === 'child') {
             microStoreData.getMicroChildData(data);
         }
-    }, true)
-}
-
+    }, true);
+};
